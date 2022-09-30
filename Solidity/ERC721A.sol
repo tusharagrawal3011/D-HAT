@@ -653,7 +653,7 @@ contract ERC721 is
     uint128 numberMinted;
   }
 
-  uint256 private currentIndex = 0;
+  uint256 public currentIndex = 0;
 
   uint256 internal collectionSize;
   uint256 internal maxBatchSize;
@@ -671,7 +671,8 @@ contract ERC721 is
 
   mapping(address => mapping(address => bool)) private _operatorApprovals;
 
-  
+  mapping(uint256 => string) private _tokenURIs;
+
   constructor(
     string memory name_,
     string memory symbol_,
@@ -806,11 +807,17 @@ contract ERC721 is
       "ERC721Metadata: URI query for nonexistent token"
     );
 
+    string memory _tokenURI = _tokenURIs[tokenId];
     string memory baseURI = _baseURI();
+    if (bytes(baseURI).length == 0) {
+            return _tokenURI;
+        }
+
+    if(bytes(_tokenURI).length ==0)
     return
       bytes(baseURI).length > 0
-        ? string(abi.encodePacked(baseURI, tokenId.toString()))
-        : "";
+        ? string(abi.encodePacked(baseURI, _tokenURI))
+        :"";
   }
 
   
@@ -818,6 +825,10 @@ contract ERC721 is
     return "";
   }
 
+    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
+        
+        _tokenURIs[tokenId] = _tokenURI;
+    }
   
   function approve(address to, uint256 tokenId) public override {
     address owner = ERC721.ownerOf(tokenId);
@@ -1225,14 +1236,16 @@ contract ERC721PresetMinterPauserAutoId is Context, AccessControlEnumerable, ERC
     function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlEnumerable, ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
+
+    
 }
 
-contract boredcryptoapes is ERC721PresetMinterPauserAutoId {
+contract Airdrop is ERC721PresetMinterPauserAutoId {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     using Strings for uint256;
     
-    constructor(uint256 _maxBatchSize, uint256 _collectionSize) ERC721PresetMinterPauserAutoId("Dave Starbelly", "https://storage.googleapis.com/opensea-prod.appspot.com/puffs/3.png", "https://openseacreatures.io/3", _maxBatchSize, _collectionSize) {}
+    constructor(uint256 _maxBatchSize, uint256 _collectionSize) ERC721PresetMinterPauserAutoId("Name", "kunai", "https://drive.google.com/uc?id=1NeYsNAPQuxWXSUzFf_xIU5q8n1llBgjv", _maxBatchSize, _collectionSize) {}
 
     function mintBulk(uint bulkno) public returns (uint256){
         _tokenIds.increment();
@@ -1245,6 +1258,7 @@ contract boredcryptoapes is ERC721PresetMinterPauserAutoId {
                 newItemId = _tokenIds.current();
             }
             _safeMint(msg.sender, newItemId);
+            _setTokenURI(_tokenIds.current(),"https://drive.google.com/uc?id=1NeYsNAPQuxWXSUzFf_xIU5q8n1llBgjv");
         }
         return newItemId;
     }
@@ -1253,6 +1267,7 @@ contract boredcryptoapes is ERC721PresetMinterPauserAutoId {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _safeMint(msg.sender, newItemId);
+        _setTokenURI(_tokenIds.current(),"https://drive.google.com/uc?id=1NeYsNAPQuxWXSUzFf_xIU5q8n1llBgjv");
         return newItemId;
     }
 
